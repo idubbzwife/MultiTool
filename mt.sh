@@ -1,17 +1,16 @@
 #!/bin/bash
 #                               Root Check Does Not Function!
-#if (whoami != root)
-#then 
-#    echo "Please Run As root"
-#    exit
-#else
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+else
 
 #                               colors
 NC='\033[0m'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
-
+GRAY='\033[0;37m'
 set -e
 trap ctrl_c INT
 
@@ -36,10 +35,10 @@ clear
 echo -e "$BLUE __  __        _  _    _  _____            _ \n|  \/  | _  _ | || |_ (_)|_   _| ___  ___ | |\n| |\/| || || || ||  _|| |  | |  / _ \/ _ \| |\n|_|  |_| \_._||_| \__||_|  |_|  \___/\___/|_|\n\nidubbzwife\n"
 sleep 0.25
 clear
-echo -e "$NC __  __        _  _    _  _____            _ \n|  \/  | _  _ | || |_ (_)|_   _| ___  ___ | |\n| |\/| || || || ||  _|| |  | |  / _ \/ _ \| |\n|_|  |_| \_._||_| \__||_|  |_|  \___/\___/|_|\n\nidubbzwife\n"
+echo -e "$GRAY __  __        _  _    _  _____            _ \n|  \/  | _  _ | || |_ (_)|_   _| ___  ___ | |\n| |\/| || || || ||  _|| |  | |  / _ \/ _ \| |\n|_|  |_| \_._||_| \__||_|  |_|  \___/\___/|_|\n\nidubbzwife\n"
 sleep 0.25
 
-echo -e $NC"what do you wish to do?\n1 monitor mode\n2 managed mode\n3 change  mac adress\n4 check a hash\n5 Arp Scan\n6 nmap default scans"
+echo -e $NC"what do you wish to do?\n1 monitor mode\n2 managed mode\n3 change  mac adress\n4 check a hash\n5 Arp Scanchange mac then scan lan\n6 nmap default scans\n7 Check IP That Termanal Is -Actually- Useing"
 read MODE
 if [ $MODE == 1 ]
 then
@@ -90,25 +89,16 @@ then
         if [ "${my_array[0]}" == "$RXHASH" ]
         then
             echo -e "Hashes Match."
-            sleep 0.5
-            clear
-            echo -e $RED"EXITING"
-            sleep 0.1
-            echo -e $GREEN"EXITING"
-            sleep 0.1
-            echo -e $BLUE"EXITING"
-            sleep 0.1
-            exit
         else
         echo "Hashes Don't Match"
         fi
 elif [ $MODE == 5 ]
 then
-    sudo arp-scan -I wlan0 -l -g
+    sudo netdiscover
 elif [ $MODE == 6 ]
 then
     clear
-    echo -e "nmap presets\n1 Intense scan\n2 Intense scan plus UDP\n3 Intense scan, all TCP ports\n4 Intense scan, no ping\n5 Ping scan\n6 Quick scan\n7 Quick scan plus\n8 Quick scan plus\n9 Quick traceroute\n10 Regular scan\n11 Slow comprehensive scan"
+    echo -e "nmap presets\n1 Intense scan\n2 Intense scan plus UDP\n3 Intense scan, all TCP ports\n4 Intense scan, no ping\n5 Ping scan\n6 Quick scan\n7 Quick scan plus\n8 Quick traceroute\n9 Regular scan\n10 Slow comprehensive scan"
     read SCAN
     clear
     echo "Type Target Adress"
@@ -130,22 +120,26 @@ then
         sudo nmap -sn $TARGET
     elif [ $SCAN == 6 ]
     then
-        sudo nmap -sn $TARGET
+        sudo nmap -T4 -F $TARGET
     elif [ $SCAN == 7 ]
     then
-        sudo nmap -T4 -F $TARGET
+        sudo nmap -sV -T4 -O -F –version-light $TARGET
     elif [ $SCAN == 8 ]
     then
-        sudo nmap -sV -T4 -O -F –version-light $TARGET
+        sudo nmap -sn –traceroute $TARGET
     elif [ $SCAN == 9 ]
     then
-        sudo nmap -sn –traceroute $TARGET
-    elif [ $SCAN == 10 ]
-    then
         sudo nmap $TARGET
-    elif [ $SCAN == 11 ]
+    elif [ $SCAN == 10 ]
     then
         sudo nmap -sS -sU -T4 -A -v -PE -PP -PS80,443 -PA3389 -PU40125 -PY -g 53 –script "default or (discovery and safe)" $TARGET
     fi
+elif [ $MODE == 7 ]
+then
+    clear
+    curl 'https://api.ipify.org'
+    echo -e "\n"
 
+
+fi
 fi
